@@ -44,3 +44,11 @@
       ```
   - `key`: a value to be used as the basis of determining the partitioning strategy to be employed by the kafka Producer. Another purpose of key is that it adds additional information in the message, which can help during the processing. A downside is that additional payload is used, this will depend on the serialization used.
 
+## Process of Sending Message
+
+- When send method is called, the prodcuer reaches out to the cluster using boostrap.servers list.
+- "Metadata" response is returned about the topics, their partitions and managing brokers on the cluster. This instantiates a `Metadata` object inside the producer. This object is always kept fresh with the latest information about the cluster.
+- A psuedo processing pipeline starts in the producer. First step is that message is passed through the configured serializer.
+- Next step is of the *partitioner*, which decides what partition to use based on the value passed in the `ProducerRecord`.
+- Kafka Producer Partitioning Strategy:
+  ![Screenshot 2021-05-16 at 3 21 02 PM](https://user-images.githubusercontent.com/10058009/118393032-6dc6f780-b65a-11eb-9ce7-53494ae29e2a.png)

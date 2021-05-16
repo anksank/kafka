@@ -51,4 +51,8 @@
 - A psuedo processing pipeline starts in the producer. First step is that message is passed through the configured serializer.
 - Next step is of the *partitioner*, which decides what partition to use based on the value passed in the `ProducerRecord`.
 - Kafka Producer Partitioning Strategy:
+  - direct
+  - round robin
+  - key mod hash
+  - custom
   ![Screenshot 2021-05-16 at 3 21 02 PM](https://user-images.githubusercontent.com/10058009/118393032-6dc6f780-b65a-11eb-9ce7-53494ae29e2a.png)

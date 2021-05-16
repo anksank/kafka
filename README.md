@@ -56,10 +56,12 @@
   - key mod hash
   - custom
 ![Screenshot 2021-05-16 at 3 21 02 PM](https://user-images.githubusercontent.com/10058009/118393032-6dc6f780-b65a-11eb-9ce7-53494ae29e2a.png)
-- Once the partitioning scheme is established, producer dispatches the ProducerRecord onto an in-memory queue like data structure called `RecordAccumulator`: Low level object that has lot of complexity. RecordAccumulator gives the ability to micro-batch records.
+- Once the partitioning scheme is established, producer dispatches the ProducerRecord onto an in-memory queue like data structure called `RecordAccumulator`: Low level object that has lot of complexity. RecordAccumulator gives the ability to micro-batch(explained below) records.
 - When RecordAccumulator receives the ProducerRecord, it gets added to a collection of record batch objects for each topic partition combination needed by the producer instance. Each `RecordBatch` is a small batch of records going to be sent to the broker that owns the assigned partition.
 - Properties that are set at the producer level decide the number of records in the RecordBatch.
 ![Screenshot 2021-05-16 at 4 32 12 PM](https://user-images.githubusercontent.com/10058009/118394775-542aad80-b664-11eb-8de1-0efc6a59a62f.png)
+- After message buffering(explained below), when the records are sent to the broker, the broker responds with a `RecordMetadata` Object, which contains information about the records that were successfully or unsuccessfully received.
+![Screenshot 2021-05-16 at 5 08 26 PM](https://user-images.githubusercontent.com/10058009/118395694-5b07ef00-b669-11eb-8b76-da378486c252.png)
 
 
 ### Micro-batching in Apache Kafka
@@ -68,3 +70,10 @@ Each time you send, persist or read a message, resource overhead is incurred. To
 Small, fast batches of messages, while sending (producer), writing (broker), and receiving (consumer). It makes use of the modern OS system functions like Pagecache and Linux sendfile() system call. By batching, the cost overhead of transmissing, flushing to disk, or doing a network fetch is amortized over the entire batch.
 
 ### Message Buffering
+
+- Each RecordBatch has a limit on the number of records that can be buffered. Configuration setting `batch.size` decides the limit. Max bytes that can be buffered each RecordBatch.
+- Another setting is `buffer.memory`: the threshold memory (no. of bytes) that will be used to buffer all the RecordBatches.
+- If high volume of records being buffered reaches the threshold established in buffer.memory, `max.block.ms` settings comes into effect. The number of milliseconds, the send method will be blocked for. This blocking method forces the thread on the producer to send more ProducerRecords onto the buffer. The hope is that, within the provided number of ms, the buffered contents will be trsansmitted and free up more buffer memory to free up more records to be enqueued.
+- When records are sent to RecordBatch, they wait for one of the 2 things to happen:
+  - Record accumulation occurs and when total buffer size reaches the per buffer batch size limit, records are sent immediately in a batch.
+  - Simultaneously, new records are being sent to other accumulators and record buffers. Another configuration called `linger.ms` is used: no. of ms an unfull buffer should wait before transmitting whatever records are waiting. In case of high frequency scenarios, linger.ms does not come into the picture.

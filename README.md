@@ -56,3 +56,15 @@
   - key mod hash
   - custom
 ![Screenshot 2021-05-16 at 3 21 02 PM](https://user-images.githubusercontent.com/10058009/118393032-6dc6f780-b65a-11eb-9ce7-53494ae29e2a.png)
+- Once the partitioning scheme is established, producer dispatches the ProducerRecord onto an in-memory queue like data structure called `RecordAccumulator`: Low level object that has lot of complexity. RecordAccumulator gives the ability to micro-batch records.
+- When RecordAccumulator receives the ProducerRecord, it gets added to a collection of record batch objects for each topic partition combination needed by the producer instance. Each `RecordBatch` is a small batch of records going to be sent to the broker that owns the assigned partition.
+- Properties that are set at the producer level decide the number of records in the RecordBatch.
+![Screenshot 2021-05-16 at 4 32 12 PM](https://user-images.githubusercontent.com/10058009/118394775-542aad80-b664-11eb-8de1-0efc6a59a62f.png)
+
+
+### Micro-batching in Apache Kafka
+
+Each time you send, persist or read a message, resource overhead is incurred. To make sure this does not cause a bad performance, Kafka uses **micro-batching**.
+Small, fast batches of messages, while sending (producer), writing (broker), and receiving (consumer). It makes use of the modern OS system functions like Pagecache and Linux sendfile() system call. By batching, the cost overhead of transmissing, flushing to disk, or doing a network fetch is amortized over the entire batch.
+
+### Message Buffering

@@ -42,7 +42,7 @@
       // CreateTime: producer-set timestamp used. Even if not explicitly given by the producer, its attached when message is sent by producer.
       // LogAppendTime: broker set timestamp used when message is appended to the commit log.
       ```
-  - `key`: a value to be used as the basis of determining the partitioning strategy to be employed by the kafka Producer. Another purpose of key is that it adds additional information in the message, which can help during the processing. A downside is that additional payload is used, this will depend on the serialization used.
+  - `key`: a value to be used as the basis of determining the partitioning strategy to be employed by the kafka Producer. Another purpose of key is that it adds additional information in the message, which can help during the processing. A downside is that additional payload overhead, which will depend on the serialization used.
 
 ## Process of Sending Message
 

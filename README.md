@@ -171,3 +171,10 @@ Sample: Send 50 records, 1 byte each, 10 per second.
 To alter the number of paritions:  
 `bin/kafka-topics.sh --zookeeper localhost:2181 --alter --topic my-topic --partitions 4`
 
+## Kafka Consumer Polling
+
+- When subscribe/assign is called, `SubscriptionState` object is used to keep the current information about all the topics and partitions a consumer is assigned to. This object also plays an important role along with `ConsumerCoordinator` to manage offsets.
+- When poll(100) is invoked, consumer settings related to the bootstrap server is used to request the metadata of the cluster.
+- `Fetcher` is the most important object which takes care of the communication between consumer and the cluster. Within this, there are several fetch related operations to initiate communication. 
+- Fetcher communicates to the cluster through Consumer Network Client. When the client is open sending TCP packets, consumer starts sending heartbeats, which enables the cluster to know what consumers are connected. Initial metadata is also sent this time. This is used to update the internal metadata object and is updated whenever the cluster details change.
+- 

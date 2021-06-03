@@ -161,3 +161,13 @@ Nothing happens until you start `poll()` loop. Its the primary function of a Kaf
   }  
   ```
 
+### Kafka Producer perf test shell program
+
+Sample: Send 50 records, 1 byte each, 10 per second.  
+`bin/kafka-producer-perf-test.sh --topic my-other-topic --num-records 50 --record-size 1 throughput 10 producer-props bootstrap.servers=localhost:9092 key.serializer=org.apache.kafka.common.serialization.StringSerializer value.serializer=org.apache.kafka.common.serialization.StringSerializer`
+
+### Kafka topics shell program to alter existing topics
+
+To alter the number of paritions:  
+`bin/kafka-topics.sh --zookeeper localhost:2181 --alter --topic my-topic --partitions 4`
+

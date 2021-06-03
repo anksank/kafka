@@ -77,3 +77,22 @@ Small, fast batches of messages, while sending (producer), writing (broker), and
 - When records are sent to RecordBatch, they wait for one of the 2 things to happen:
   - Record accumulation occurs and when total buffer size reaches the per buffer batch size limit, records are sent immediately in a batch.
   - Simultaneously, new records are being sent to other accumulators and record buffers. Another configuration called `linger.ms` is used: no. of ms an unfull buffer should wait before transmitting whatever records are waiting. In case of high frequency scenarios, linger.ms does not come into the picture.
+
+## Delivery Guarantees
+
+To ensure that the delivery happens, some configuration is done at the producer level.
+- Broker acknowledgement ("acks"). Possible values:
+  - 0: fire and forget (no acknowledgement is sent by the broker, fastest approach; producer has no way of knowing if the message reached the broker)
+  - 1: leader acknowledged (only the leader broker needs to confirm if the message was received, none of the replicated brokers of the quorum; good balance of performance & reliability)
+  - 2: replication quorum acknowledged (all replicas must confirm if the message was received; highest level of assurance; at the cost of performance)
+- In case of error, no. of "retries" that needs to be attempted can be set.
+- "retry.backoff.ms" - wait period in ms, before retrying.
+
+## Ordering Guarantees
+
+- Message ordering is only guaranteed in a specific partition
+- Messages sent to multiple partitions will not have a global order. Needs to be handled at the consumer, if required.
+- Complication with errors
+  - If `retry.backoff.ms` is set to a low value, acknowledgement for a message might not have been received, and a retry would be triggered. Before retry is sent, a 2nd message can be sent, and this causes a problem with ordering.
+  - To avoid this, `max.in.flight.request.per.connection` can be set to 1. Any given time, only 1 request can be made. (Ouch)
+

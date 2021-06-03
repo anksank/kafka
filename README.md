@@ -96,3 +96,68 @@ To ensure that the delivery happens, some configuration is done at the producer 
   - If `retry.backoff.ms` is set to a low value, acknowledgement for a message might not have been received, and a retry would be triggered. Before retry is sent, a 2nd message can be sent, and this causes a problem with ordering.
   - To avoid this, `max.in.flight.request.per.connection` can be set to 1. Any given time, only 1 request can be made. (Ouch)
 
+## Advanced topics that can be explored
+
+- Custom Serializers
+- Custom Partitioners
+- Asynchronous Send
+- Compression
+- Advanced Settings - for optimal throughput and performance
+
+## Kafka Consumers
+
+- Just like a Producer, a consumer also needs 3 properties to be instantiated: `bootstrap.servers`, `key` & `value` deserializers (instead of serializers in case of a Producer)
+  ```java
+  Properties props = new Properties();
+  props.put("bootstrap.servers", "BROKER-1:9092, BROKER-2:9093");
+  props.put("key.serializer", "org.apache.kafka.common.serialization.StringDeserializer");
+  props.put("value.serializer", "org.apache.kafka.common.serialization.StringDeserializer");
+  
+  KafkaConsumer myConsumer = new KafkaConsumer(props);
+  ```
+- Other consumer properties can be found here: http://kafka.apache.org/documentation.html#consumerconfigs
+- **Subscribing to a Topic:**
+  `myConsumer.subscribe(Arrays.asList("my-topic"));`
+- single consumer can subscribe to any number of topics.
+- a regular expression can also be used as a parameter: `myConsumer.subscribe("my-*");`
+- calls to the subscribe method are not incremental: if consumer is subscribed to a topic, you cannot call the same method again to subscribe to another topic (along with the existing topic). It will override the earlier call to subscribe.
+- Opposite of subscribe is `unsibscribe`. Example: `myConsumer.unsubscribe();`. Another option to unsubscribe is to pass an empty list to the subscribe method.
+
+## Kafka subscribe and assign API
+
+- calling `subscribe()` method means, dynamic/automatic assignment of partitions. Which means asking single consumer to poll from every partition from the topic. If there are many topics, it can have very important implications.
+- `assign` method is used to subscribe to individual partitions. This way is manual, self-administering mode. Irrespective of ther topics, an instance of consumer can be assigned to listen to any specific partition. This method also takes input as list and method cannot be called incrementally. `Consumer Groups` take care of this assignment for us.
+- Example:
+  ```java
+  TopicPartition partition0 = new TopicPartition("myTopic", 0); // TopicPartition is a class to represent a partition safely in Java
+  ArrayList<TopicPartition> partitions = new ArrayList<TopicPartition>();
+  partitions.add(partition0);
+  
+  myConsumer.assign(partitions);
+  ```
+
+## Single Consumer Topic Subscriptions: comparison between subscribe and assign
+
+- Benefit of using the subscribe method to poll messages is that, the partition management is entirely managed for you. (for ex: when new partition is added to a topic, the metadata gets updated and the consumer is notified. Consumer has an internal object called `SubscriptionState` which manages the subscriptions, it knows if a change affects the subscriptions).
+- In case of `assign` method call, the consumer does not care if there is a new partition added to an existing topic, although it does get informed about it.
+
+## The Poll Loop
+
+Nothing happens until you start `poll()` loop. Its the primary function of a Kafka Consumer.
+- When poll() is called, the consumer starts polling the brokers for data.
+- Its the single API for handling all consumer broker interactions.
+- This is in fact an infinite loop, which will only be interrupted for valid reasons.
+  ```java
+  myConsumer.subscribe(topics);
+  
+  try {
+    while (true) {
+      ConsumerRecords<String, String> records = muConsumer.poll(100);
+      // processing logic goes here ...
+    }
+  }
+  finally {
+    myConsumer.close();
+  }  
+  ```
+

@@ -184,7 +184,33 @@ To alter the number of paritions:
 - The value passed in the poll method (100) -> This is the number of milliseconds for which the network waits to receive messages from the cluster before returning. Its the minimum amount of time each message retrieval cycle will take.
 - When timeout expires, a batch of records is returned and added to the in memory buffer where they are parsed, deserialized and grouped into consumer records by topic and partition. Once the fetcher finishes this process, it returns the object for processing.
 - **poll() process is single-threaded operation**. There can only be a single thread per kafka consumer.
-  
-  ![Screenshot 2021-06-04 at 1 26 11 PM](https://user-images.githubusercontent.com/10058009/120767073-78c5c700-c538-11eb-98f6-e84fb471448a.png)
-  
+![Screenshot 2021-06-04 at 1 26 11 PM](https://user-images.githubusercontent.com/10058009/120767073-78c5c700-c538-11eb-98f6-e84fb471448a.png)  
 - Never spend too much time processing the result from the consumer. Hence, having a single consumer might not be the best idea.
+
+## Consumer Offsets
+
+- Value that enables consumers to operate independently by representing the last read position that the consumer has read from a partition of a topic.
+- Different categories of offsets, each representing a different state:
+  - `last committed offset`: the last record that the consumer has confirmed to have processed. For any given topic, a consumer may have multiple offsets its tracking, since each partition is mutually exclusive from the other.
+  - `current position`: as the consumer reads messages from the last committed offset, it tracks its current position.
+  - `log-end offset`: current position advances as the consumer advances towards the last record in the partition, which is the log-end offset.
+  - `un-committed offsets`: difference between the current position and last committed offset.
+- We need to reduce the un-committed offsets value by programming in the right way.
+![Screenshot 2021-06-04 at 1 37 50 PM](https://user-images.githubusercontent.com/10058009/120768715-1372d580-c53a-11eb-9bec-444b61cf4864.png)
+- Property that takes care of updating the last committed offset: `enable.auto.commit`, default value for which is true. Its a blind setting, because kafka does not know under what logical circumstances, a record can be considered processed. It does this updation using another property called `auto.commit.interval`, with default value of 5000 (ms).
+  - In case the processing logic is not able to process a ConsumerRecord within 5 seconds, the consumer is going to notify the customer that the record is processed. If for some reason, the processing fails, there would be no way to go back to the **actually** committed offset.
+
+**The extent in which your system can be tolerant of, eventually consistency is determined by its reliability.**
+
+### Offset Behaviour
+
+- Just because something is read, doesn't mean that its committed. **Read != Committed**
+- Offset behaviour is configurable.
+  - convenient option is the default one provided by kafka: `enable.auto.commit = true`. Its comparable to garbage collection in modern programming languages.
+  - In kafka, we can use the commit frequency to take care of this. `auto.commit.internal.ms = 5000`. Increasing this to a upper bound which your processing logic can take, will take care of the problem. But it creates a offset gap in the opposite direction where your commits are lagging behind your processing positions.
+  - another property: `auto.offset.reset = "latest"` (default). When a consumer starts reading from a new parition. In contrast, this could be set to `"earliest"`. Another setting is `"none"`, when you want to decide which record you want to process.
+- **Storing the offsets**: Kafka stores the committed offsets in a special topic called, `__consumer_offsets`. It has 50 partitions by default. The ConsumerCoordinator takes care of producing messages to be written to this topic.
+
+### Offset Management
+
+- There are 2 modes of offset management, automatic and manual. To choose manual, the property `enable.auto.commit` needs to be set to false. This gives the full control of offset commits to the consumer application. The API to take care of this has 2 properties: `commitSync()` and `commitAsync()`.

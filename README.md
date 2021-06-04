@@ -176,5 +176,15 @@ To alter the number of paritions:
 - When subscribe/assign is called, `SubscriptionState` object is used to keep the current information about all the topics and partitions a consumer is assigned to. This object also plays an important role along with `ConsumerCoordinator` to manage offsets.
 - When poll(100) is invoked, consumer settings related to the bootstrap server is used to request the metadata of the cluster.
 - `Fetcher` is the most important object which takes care of the communication between consumer and the cluster. Within this, there are several fetch related operations to initiate communication. 
-- Fetcher communicates to the cluster through Consumer Network Client. When the client is open sending TCP packets, consumer starts sending heartbeats, which enables the cluster to know what consumers are connected. Initial metadata is also sent this time. This is used to update the internal metadata object and is updated whenever the cluster details change.
-- 
+- Fetcher communicates to the cluster through Consumer Network Client. When the client is open sending TCP packets, consumer starts sending heartbeats, which enables the cluster to know what consumers are connected. Initial metadata is also sent this time. This is used to update the internal metadata object and is updated till the time poll method is running and whenever the cluster details change.
+- `ConsumerCoordinator` now takes the responsibility to coordinate between the consumers. It has 2 main jobs:
+  - Being aware of automatic/dynamic partition re-assignments and notification of the assignment changes to the SubscriptionState object.
+  - Committing offsets to the cluster. Once the offset is confirmed by the cluster, the SubscriptionState object is also notified of the same.
+- To start retrieving messages, the fetcher needs to know what topics and paritions it should be asking for. This info comes from the SubscriptionState object and then starts asking for messages.
+- The value passed in the poll method (100) -> This is the number of milliseconds for which the network waits to receive messages from the cluster before returning. Its the minimum amount of time each message retrieval cycle will take.
+- When timeout expires, a batch of records is returned and added to the in memory buffer where they are parsed, deserialized and grouped into consumer records by topic and partition. Once the fetcher finishes this process, it returns the object for processing.
+- **poll() process is single-threaded operation**. There can only be a single thread per kafka consumer.
+  
+  ![Screenshot 2021-06-04 at 1 26 11 PM](https://user-images.githubusercontent.com/10058009/120767073-78c5c700-c538-11eb-98f6-e84fb471448a.png)
+  
+- Never spend too much time processing the result from the consumer. Hence, having a single consumer might not be the best idea.

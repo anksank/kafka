@@ -214,3 +214,32 @@ To alter the number of paritions:
 ### Offset Management
 
 - There are 2 modes of offset management, automatic and manual. To choose manual, the property `enable.auto.commit` needs to be set to false. This gives the full control of offset commits to the consumer application. The API to take care of this has 2 properties: `commitSync()` and `commitAsync()`.
+- commitSync: used when you want precise control over when you want to inform the cluster that a record has been processed. `myConsumer.commitSync();` It would make sense if this step is done after the processing of your batch of records is done, not after individual processing of records, since the call is a blocking one and will wait till there is a response back from the cluster. commitSync is retried till there is success or till an unrecoverable error. Property used to retry commitSync: `retry.backoff.ms` (default:100) -> time after which you want retry to be triggered. In this case, throughput and performance is traded for control and consistency.
+- commitAsync: non-blocking call, but non-deterministic. There are no retries in this case when the commit does not happen. However, there is a callback option to be passed as shown below. Throughput and overall performance is better. 
+  example:
+  ```java
+  try {
+    for (...) { // Processing batches of records... }
+    // Not recommended:
+    myConsumer.commitAsync();
+    
+    // Recommended:
+    myConsumer.commitAsync(new OffsetCommitCallback() {
+      public void onComplete(..., ..., ...) { // do something }
+    });
+  }
+  ```
+
+## Committing Offsets
+
+- Offset Management occurs when the poll method has timed out and the records have been presented for processing. Whether its an automatic commit or explicit call to commit API, the commit process takes a batch of records, determine the offsets and asks the ConsumerCoordinator to commit them to the Kafka Cluster via the Consumer Network Client.
+- When the offsets have been confirmed to have been committed, ConsumerCoordinator updates the SubscriptionState object accordingly, so the fetcher is always aware of the offset of committed records and what is the next record to be retrieved.
+![Screenshot 2021-06-05 at 2 59 46 PM](https://user-images.githubusercontent.com/10058009/120887104-b1d06b00-c60e-11eb-839f-d00bdfe7f000.png)
+
+
+### Common reasons of taking control of the offset management
+
+- Consistency Control
+  - When is "done"
+- Atomicity: being able to process the records as an atomic operation. Specially in transaction processing system.
+  - This is required when there is a desire to reach "Exactly once" message processing vs. "At-least-once" message processing.

@@ -298,3 +298,30 @@ Consumer performance and efficiency
   - pause()
   - resume()
 - Rebalance listeners: These listeners notify you when a rebalance occurs, in case you want to handle offsets yourself.
+
+## Primary use cases for Apache Kafka
+
+- Connecting disparate sources of data: its possible to write data connectors for practically any data source
+- Large scale data movement pipelines: can be a replacement of long standing, expensive, fragile ETL environments
+- "Big Data" integration: integration with Hadoop and Spark is very much possible
+
+### Challenges and whats next? (2016)
+
+- Governance and Data Evolution
+  - In advanced cases, the built in serializer for Key and Value are not enough. When diversity increases among the systems, custom serializers come to play. The consumers need to understand the data being produced and needs to be aware of the deserialization to be used to make sense out of the data. Challenge here is the cataloging and management of message serializers being used on the producer side and deserailizers needed on the consumer side.
+![Screenshot 2021-06-06 at 9 54 55 PM](https://user-images.githubusercontent.com/10058009/120932053-df520d00-c711-11eb-87e0-8527ce819b54.png)
+  - One of biggest kafka ecosystem contributor is **Confluent** and they have recognised this challenge. They introduced **Kafka Schema Registry**. How?
+    - Apache Avro serialization format: version format (producers can serialize messages in an avro versioned and self describing format and expect them to be deserialized by the consumers)
+    - Schema registry and version management: the versioned schema used can be maintained centrally on the cluster used.
+    - RESTful service discovery
+    - Compatibility broker
+    - Open source with Apache license
+- Consistency and Productivity: need for lower overhead and less investment. hence, inconsistency and cost remain a challenge in case of Kafka.
+  - Lot of duplicate applications are created that connect specific data sources together. The challenge is lack of a consistent framework for providing connectivity between specific data sources and targets. Its always left to the individual to create these integration scenarios, which is more cost and maintenance. Not every company has resources to maintain this.
+![Screenshot 2021-06-06 at 10 03 14 PM](https://user-images.githubusercontent.com/10058009/120932353-05c47800-c713-11eb-9d84-adfb8fbcf667.png)
+  - 0.10 release addressed this challenge: **Apache Kafka Connect**
+    - API for developers which gives common framework for integration: Standardization of common approaches of Producers and Consumers.
+    - Oracle and HP are examples
+    - 50+ connectors available (thanks to Confluent for major contribution)
+    - There is a connector Hub that has all details. It has become cheaper and fast to use the Kafka Connect.
+- Big and Fast data: management of big data in a fast way is going to be a big challenge in the coming years

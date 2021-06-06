@@ -324,4 +324,12 @@ Consumer performance and efficiency
     - Oracle and HP are examples
     - 50+ connectors available (thanks to Confluent for major contribution)
     - There is a connector Hub that has all details. It has become cheaper and fast to use the Kafka Connect.
-- Big and Fast data: management of big data in a fast way is going to be a big challenge in the coming years
+- Big and Fast data: management of big data in a fast way is going to be a big challenge in the coming years.
+  - There are multiple solutions to deal with Machine Learning, Predictive Analysis in a real time environment like Apache Storm, Apache Cassandra, Apache Spark, Apache Hadoop. Kafka is found in the middle. Each of these technologies have their own set of APIs to manage cluster and perform other operations. If all these technologies exist under the same roof, there are consistency and productivity challenges in integrating it all together. With kafka in the center, it would need an army of producers and consumers to keep the pipeline flowing.
+![Screenshot 2021-06-06 at 11 08 19 PM](https://user-images.githubusercontent.com/10058009/120934505-1d542e80-c71c-11eb-93d2-6754b13b15c4.png)
+  - With 0.10 release, a client library for real time stream based processing was introduced: **Kafka Streams**
+    - Leverages existing Kafka machinery. The products using all the components for real time data analysis, can now have streaming data capabilities without having to install, run and maintain all of the above mentioned platforms.
+    - Single infratructure solution. Although many organisations still invest in apache hadoop and spark for various reasons. At least for stream based processing, Kafka could be the only system needed.
+    - Kafka streams is a client library, so its just like kafka producers and consumers, which can be embedded in existing applications.
+
+#### Netflix, LinkedIn, Confluent, Twitter, Uber -> Huge users of Kafka and also make generous contributions to it.

@@ -281,4 +281,20 @@ When a new consumer joins a group and a parition which was earlier assigned to s
   - When partition is added
   - Consumer failure
 
+## Consumer Configuration
 
+Consumer performance and efficiency
+- `fetch.min.bytes`: minimum number of bytes that must be returned from the poll, to ensure that there are no wasted cycles of processing if there are not enough messages to process. Analogous to `batch.size` on the producer side.
+- `max.fetch.wait.ms`: time to wait if there is not enough data available which is set in the fetch.min.bytes setting. Similar to linger.ms setting on the producer.
+- `max.partition.fetch.bytes`: to make sure your processing logic is not overloaded, this property can be set, which is the maximum number of bytes to be fetched per partition.
+- `max.poll.records`: Similar to the above setting. maximum no. of records that can be polled in each cycle. The previous 2 settings are useful to throttle the batch of record received by the consumer at once (when processing time is a concern)
+
+## Advanced topics to be explored:
+- Consumer position control -> 3 methods: 
+  - seek() -> to read a specific offset of message in a given topic and parition.
+  - seekToBeginning() -> when you want start reading from the beginning of a group of specific topics and paritions
+  - seekToEnd() -> opposite of seekToBeginning()
+- Flow Control -> If you want to pause specific topics and parition, and process other topic and paritions (higher priority). Helpful when a single consumer has to read from multiple topics and partitions
+  - pause()
+  - resume()
+- Rebalance listeners: These listeners notify you when a rebalance occurs, in case you want to handle offsets yourself.

@@ -243,3 +243,42 @@ To alter the number of paritions:
   - When is "done"
 - Atomicity: being able to process the records as an atomic operation. Specially in transaction processing system.
   - This is required when there is a desire to reach "Exactly once" message processing vs. "At-least-once" message processing.
+
+#### Single execution thread is definitely not enough to receive and process the messages retrieved from multiple paritions of a topic.
+
+## Scaling out Customers (Consumer Groups)
+
+- If more message production is needed, solution is to add more producers
+- If more message retention and redeundancy is needed, add more brokers
+- If more metadata management facilities is needed, add more zookeeper members
+- If more processing and scalability is required, `Consumer Groups` are required. (Consumer Side scale-out)
+  - Independent consumers working as a team
+  - Only thing required to join a consumer group is the `group.id` setting before starting a consumer
+  - The task of message consumption and processing load is evenly balanced amongst the consumers.
+    - Parallelism and throughput increases
+    - Redundancy level can be increased
+    - Performance is better
+
+### Steps when multiple consumers form a consumer group
+
+- When multiple consumers with the same group.id calls the subscribe method with the same list of topics, behind the scene, a designated broker is elected as `GroupCoordinator` whose job is to manage and maintain consumer groups membership. GroupCoordinator works with the Cluster Coordinator and zookeeper to assign and monitor specific paritions within a topic to individual consumers within a consumer group.
+- After a consumer group is formed, each consumer sends a regular heartbeats at an interval defined in property `heartbeat.internal.ms = 3000`. Based on this heartbeat, the group coordinator decides whether an individual consumer is alive and able to participate in the group.
+- GroupCoordinator waits for a specific time called `session.timeout.ms = 30000` for any consumer to send heartbeat, after which the consumer is treated as failed and corrective measures are taken. Main task of GroupCoordinator is to make sure the load is balanced among all the consumers of a consumer group.
+- If a consumer is not available for some reason, the GroupCoordinator removes that consumer and assigns the partition to some other consumer of the group. This is called `Consumer Rebalance`. If there is no additional consumers in the consumer group, the first consumer in the group gets the new assignment and in this case ends up taking twice as much load as before.
+- Similar rebalance occurs if there is a consumer added, or a partition is added to the cluster.
+![Screenshot 2021-06-06 at 5 09 16 PM](https://user-images.githubusercontent.com/10058009/120923027-f3821400-c6e9-11eb-83f5-d0d2c05d0efc.png)
+
+### Consumer Group Rebalancing
+
+When a new consumer joins a group and a parition which was earlier assigned to some other consumer is assigned to the new one, the new consumer needs to know the position from which it needs to poll messages. This is done using the property defined in the `auto.offset.reset` setting (default: latest). Hence, new consumer starts reading from the last committed offset of the previous consumer (assuming that the previous consumer was able to commit this information properly). If the previous consumer was processing a record which it was not able to commit, its possible that the new consumer picks up a record which was already processed. This creates duplicates.
+
+### Importance of Group Coordinator
+
+- Evenly balance available Consumers to partitions.
+  - If its possible, it will assign 1 partition to 1 consumer (1:1 Consumer-to-partition ratio)
+  - If there are extra consumers compared to number of paritions, they are going to be idle.
+- When a new parition becomes available, the GroupCoordinator initiates the rebalancing protocol by engaging each ConsumerCoordinator in the impacted consumers, to start process of rebalancing
+  - When partition is added
+  - Consumer failure
+
+

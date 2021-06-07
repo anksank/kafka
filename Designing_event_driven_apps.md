@@ -35,7 +35,7 @@ In a typical system, the system design revolves around the data, but in case of 
 
 Event Storming is used to model a whole business line with domain events as a result of a collaboration of different of the organization.
 
-The Workshop:
+#### The Workshop:
 - Things needed
   - Need a room for different people to participate. No chairs, since its interactive session
   - Invite the right people. A facilitator (one of knows about the workshop) decides the minimum number of person for the meeting. No upper limit. Couple of architects, developer, UX and a domain expert (someone who knows how the business works and its processes) are required.

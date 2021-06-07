@@ -32,3 +32,19 @@ These 3 form very important pieces of any event driven architecture. Their meani
 ### Event Storming
 
 In a typical system, the system design revolves around the data, but in case of event driven, it revolves around event (you dont care how your data looks like). The approach to design EDA is called **Event Storming** combined with **Domain-driven design**.
+
+Event Storming is used to model a whole business line with domain events as a result of a collaboration of different of the organization.
+
+The Workshop:
+- Things needed
+  - Need a room for different people to participate. No chairs, since its interactive session
+  - Invite the right people. A facilitator (one of knows about the workshop) decides the minimum number of person for the meeting. No upper limit. Couple of architects, developer, UX and a domain expert (someone who knows how the business works and its processes) are required.
+  - Unlimited modeling space: to work out the process. A huge paper/empty wall can be used.
+  - All events will be written on sticky notes of different colors. There is a color Scheme of the sticky notes:
+    - Domain events (something that is happening in the system and is relevant for the business): orange. Usually the domain event may provoke an action or even other events that affect the system.
+    - Policy: purple. Refers to a process occured by an event, and it always starts with a keyword, "Whenever". Example: Whenever an account is created, we send an email confirmation.
+    - External System: pink. Refers to any interaction that happens with an external system and you do not have control over it. Example: External payment provider like paypal.
+    - Commands: blue. Refers to the actions initiated by a user or system like a scheduled job. Different between command and event is that, command resides at the beginning of an event flow, triggering the event chain.
+  - Food: since the workshop may take a whole day or maybe even more in case of complex use cases.
+- Once we have all this, we move to the DDD (Domain-driven design) step. To model the software, we need to identiy the aggregate by logically grouping various commands and events together. Goal is to define structures that are isolating related concerns from one another.
+- Next we define the bounded context: Allowing the use of same terms in different subdomains. Example: "Received" in the order system is different compared to "Received" in the shipping system.

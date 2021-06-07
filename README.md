@@ -1,4 +1,4 @@
-# Apache Kafka
+# Apache Kafka Fundamentals
 
 *Notes in hardcopy*
 

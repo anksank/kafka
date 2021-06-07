@@ -28,3 +28,7 @@ These 3 form very important pieces of any event driven architecture. Their meani
 - Complex to maintain: What happens if something goes wrong? What happens in case of duplicate events?
 - Loss of transactionality: It becomes difficult to revert if something fails, since an event might trigger lot of small changes.
 - Lineage: Events can become lost or corrupted, and because of decoupling its difficult to identify the source of such events. Solution: Adding an identifier to the event telling which all applications the event has passed through.
+
+### Event Storming
+
+In a typical system, the system design revolves around the data, but in case of event driven, it revolves around event (you dont care how your data looks like). The approach to design EDA is called **Event Storming** combined with **Domain-driven design**.

@@ -49,7 +49,7 @@ Event Storming is used to model a whole business line with domain events as a re
 - Once we have all this, we move to the DDD (Domain-driven design) step. To model the software, we need to identiy the aggregate by logically grouping various commands and events together. Goal is to define structures that are isolating related concerns from one another.
 - Next we define the bounded context: Allowing the use of same terms in different subdomains. Example: "Received" in the order system is different compared to "Received" in the shipping system.
 
-#### Example
+#### Example: User checkout process (Shopping)
 Step 1: Event Storming. 
 ![Screenshot 2021-06-07 at 9 13 31 PM](https://user-images.githubusercontent.com/10058009/121049378-45539880-c7d5-11eb-9c40-d905e6b185d5.png)
 Step 2: DDD. 

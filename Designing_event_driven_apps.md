@@ -64,7 +64,7 @@ Step 2: DDD.
 - Open Source
 - Written in Java (originally written in Scala, but the bytecode can also be run on a JVM)
 - High throughput:
-  - because there is not serialization or deserialization happening inside kafka. What kafka receives and transmits is only bytes.
+  - because there is no serialization or deserialization happening inside kafka. What kafka receives and transmits is only bytes.
   - zero copy: when the message is received, in a typical system the network card copies it to JVM heap which puts it into hard drive. But in case of Kafka, JVM heap does not come into picture. (only available for non-TLS connections, because TLS protocol is deeply embedded in the JDK, hence its not possible in such situations)
 - More than a messaging system: Its a distributed streaming platform (messaging system, distributed storage with fault tolerance, data processing: process events as they occur). By using streaming, all incoming events can be processed in almost real time.
 

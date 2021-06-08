@@ -4,8 +4,8 @@
 
 ## Types of Topics
 
-- Delete Topic: Each kafka topic can have a size. If the size of all messages in a topic is equal to the topic size, any new incoming message will result in the oldest message getting deleted. By default there is no size limit set on the topic configuration. Another factor when messages can get deleted is time. Default retention period is 7 days.
-- Compat Topic: The kafka topic stores message in a Key and Value pair. If there is a message with the same key but different value, the older record with same key is deleted, and newer one is inserted (upsert operation). If the new key does not exist in the topic, its added to the list of messages.
+- **Delete** Topic: Each kafka topic can have a size. If the size of all messages in a topic is equal to the topic size, any new incoming message will result in the oldest message getting deleted. By default there is no size limit set on the topic configuration. Another factor when messages can get deleted is time. Default retention period is 7 days.
+- **Compat** Topic: The kafka topic stores message in a Key and Value pair. If there is a message with the same key but different value, the older record with same key is deleted, and newer one is inserted (upsert operation). If the new key does not exist in the topic, its added to the list of messages.
 
 ## Creating a Kafka Producer
 

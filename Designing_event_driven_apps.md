@@ -50,8 +50,20 @@ Event Storming is used to model a whole business line with domain events as a re
 - Next we define the bounded context: Allowing the use of same terms in different subdomains. Example: "Received" in the order system is different compared to "Received" in the shipping system.
 
 #### Example: User checkout process (Shopping)
+
 Step 1: Event Storming. 
+
 ![Screenshot 2021-06-07 at 9 13 31 PM](https://user-images.githubusercontent.com/10058009/121049378-45539880-c7d5-11eb-9c40-d905e6b185d5.png)
+
 Step 2: DDD. 
+
 ![Screenshot 2021-06-07 at 9 15 32 PM](https://user-images.githubusercontent.com/10058009/121049691-92376f00-c7d5-11eb-88de-49faa3e8c27d.png)
 
+### Why Kafka?
+
+- Open Source
+- Written in Java (originally written in Scala, but the bytecode can also be run on a JVM)
+- High throughput:
+  - because there is not serialization or deserialization happening inside kafka. What kafka receives and transmits is only bytes.
+  - zero copy: when the message is received, in a typical system the network card copies it to JVM heap which puts it into hard drive. But in case of Kafka, JVM heap does not come into picture. (only available for non-TLS connections, because TLS protocol is deeply embedded in the JDK, hence its not possible in such situations)
+- More than a messaging system: Its a distributed streaming platform (messaging system, distributed storage with fault tolerance, data processing: process events as they occur). By using streaming, all incoming events can be processed in almost real time.

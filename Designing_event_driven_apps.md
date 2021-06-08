@@ -75,3 +75,7 @@ Step 2: DDD.
 ### Kafka Consumer
 
 ![Screenshot 2021-06-08 at 2 34 58 PM](https://user-images.githubusercontent.com/10058009/121156943-c4dd7800-c866-11eb-948d-e8eb66df1c23.png)
+
+## Communicating Message Structure with AVRO and Schema Registry
+
+

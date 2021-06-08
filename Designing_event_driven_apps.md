@@ -67,3 +67,7 @@ Step 2: DDD.
   - because there is not serialization or deserialization happening inside kafka. What kafka receives and transmits is only bytes.
   - zero copy: when the message is received, in a typical system the network card copies it to JVM heap which puts it into hard drive. But in case of Kafka, JVM heap does not come into picture. (only available for non-TLS connections, because TLS protocol is deeply embedded in the JDK, hence its not possible in such situations)
 - More than a messaging system: Its a distributed streaming platform (messaging system, distributed storage with fault tolerance, data processing: process events as they occur). By using streaming, all incoming events can be processed in almost real time.
+
+### Kafka Producer Record
+
+![Screenshot 2021-06-08 at 2 19 26 PM](https://user-images.githubusercontent.com/10058009/121154453-9eb6d880-c864-11eb-99d4-2fa0a37d4101.png)

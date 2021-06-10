@@ -78,4 +78,71 @@ Step 2: DDD.
 
 ## Communicating Message Structure with AVRO and Schema Registry
 
+**Serialization:** The process of translating data structures or object states into a format that can be stored, transmitted and reconstructed later, possible in a different computer environment
 
+There can be different serialization formats, the most common of which is Binary Serialization (more compact and thus, its faster when transmitted). Drawback is that data is not human readable during the transfer. **Schemas** enforce a strict data structure. Some data serialization format allow flexible structure while others enforce using a specific one using a schema.
+
+### Popular Serialization Formats:
+
+- JSON: Uses text serialization; and there is no schema involved.
+- XML: Uses well known text serialization; Schema (not mandatory) can be used to enforce a structure.
+- YAML: Uses text serialization; No schema involved
+- Avro: Developed as part of Apache Hadoop; Uses binary serialization; Uses JSON-based schemas to define a structure.
+- Protobuf: Also known as protocol buffers uses binary schema; developed by Google and offers a simple and performant way of storing and interchanging data within systems; Uses interface description language to define structures.
+- Thrift: developed by Facebook for scalable cross language services development; Uses binary format; Uses interface description language to define structures.
+<img width="899" alt="Screenshot 2021-06-10 at 9 24 17 PM" src="https://user-images.githubusercontent.com/10058009/121557278-3f0e2800-ca32-11eb-8e54-367152f2cd44.png">
+
+### Avro Serialization Format:
+
+Offers a rich data structure which can be stored within container files. Applications use Avro for remote procedure calls by using a simple integration with dynamic languages like Groovy, JavaScript, Python. It also offers code generation and improved performance in statically typed languages like C#, Java. Since its a binary serialization format, the data is compressed in a compact format making it lighter compared to JSON, XML serialization formats. Avro uses JSON based schemas to define data structures. These schemas are either embedded in container files or transferred as separate objects. File extension for Avro schema is avsc, but the content of a JSON format.
+
+Schema has the following details:
+- type: It can be either a prmitive or a complex type.
+  - primitive types:
+    - null: no value
+    - boolean
+    - int: 32 bit signed integer
+    - long: 64 bit signed integer
+    - float: 32 bit floating point
+    - double: 64 bit floating point
+    - bytes: sequence of bits
+    - string: unicode character sequence
+  - complex types:
+    - record: combination of multiple fields 
+    - enum: predefined list of values (`{"symbols": ["BLUE", "GREEN"]}`)
+    - array: to store a list of values
+    - maps: to store key value type of data. keys are always string (`{"key": "value"}`)
+    - unions: used when you have optional values (`["null", "string"]`)
+    - fixed: used when you need to store precise number of bytes.
+- namespace
+- name of the schema: together with the namespace, it defines the full schema name
+- fields: Declared fields contained by the record. Each field record can have a special attribute as well. Below `dateOfBirth` represents no. of days from the Epoch date.
+```json
+{
+  "type": "record",
+  "namespace": "com.pluralsight",
+  "name": "User",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "string"
+    },
+    {
+      "name": "username",
+      "type": "string"
+    },
+    {
+      "name": "dateOfBirth",
+      "type": "int",
+      "logicalType": "date"
+    }
+  ]
+}
+```
+
+#### Avro Serialization/Deserialization
+
+- Initially, we have a user data and a Schema that are passed to a serializer.
+- Using the passed schema, the user data is converted to a binary object, which can be stored on a hard drive or transferred across a network. 
+- To get back the user data, we use a deserializer. Without the user schema, the deserializer cannot convert the binary object back to the user data. Even with a slightly changed schema, the deserialization will fail.
+- After deserialization, the user object can be used for further processing.

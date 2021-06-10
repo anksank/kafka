@@ -146,3 +146,9 @@ Schema has the following details:
 - Using the passed schema, the user data is converted to a binary object, which can be stored on a hard drive or transferred across a network. 
 - To get back the user data, we use a deserializer. Without the user schema, the deserializer cannot convert the binary object back to the user data. Even with a slightly changed schema, the deserialization will fail.
 - After deserialization, the user object can be used for further processing.
+
+#### Generating Java Class from Avro Schema:
+
+- Need `avro tools` to generate the class from the avsc file. Use wget to download it.
+- Command to generate classes: `java -jar <name of jar> compile schema <path of the schema file> <directory where you want class files>`
+- The generated class is more verbose than usual because it uses lot of methods for performance optimization.

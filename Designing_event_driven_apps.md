@@ -152,3 +152,18 @@ Schema has the following details:
 - Need `avro tools` to generate the class from the avsc file. Use wget to download it.
 - Command to generate classes: `java -jar <name of jar> compile schema <path of the schema file> <directory where you want class files>`
 - The generated class is more verbose than usual because it uses lot of methods for performance optimization.
+
+#### Schema Registry
+
+Application that handles the distribution of schemas to producers and consumers and stores them for long-term availability. Schema registry stores this information using a kafka topic. 
+
+In order to receive the right schema, a proper mechanism needs to be in place. **Subject name strategy** achieves that by categorizing the schemas based on the topic they belong to. The subject name for key will be `{topic-name}-key`: `user-tracking-key`. Subject name for value will be `{topic-name}-value`: `user-tracking-value`.
+
+- Serializer asks the schema registry to give schema details for the combination of topic and key. Schema registry finds this in its cache and sends it.
+- The serializer then converts the message to binary format and also stores a schema ID along with the message in binary format.
+- When consumer processes the message, it takes the schema ID present in the message.
+- The deserializer asks the schema registry to give the schema corresponding to the ID present in the message. Schema registry returns the schema and deserialization can take place.
+
+##### How does the schema end up in registry?
+
+In a non-production environment, the first application that interacts with the new topic can register the schema, but in a production environment, an admin will have to upload them. Both key and value schema for a topic is uploaded into the registry. These are stored in memory, so if something goes wrong, they are lost. To solve this, the schema registry transfers the schema in a special topic in the kafka cluster. In case schema registry crashes, it can create a new instance and connect to the same kafka cluster and the inbuilt consumer can retrieve all the schemas stored in kafka.

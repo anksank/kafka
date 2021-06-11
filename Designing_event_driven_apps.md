@@ -169,3 +169,27 @@ In order to receive the right schema, a proper mechanism needs to be in place. *
 In a non-production environment, the first application that interacts with the new topic can register the schema, but in a production environment, an admin will have to upload them. Both key and value schema for a topic is uploaded into the registry. These are stored in memory, so if something goes wrong, they are lost. To solve this, the schema registry transfers the schema in a special topic in the kafka cluster. In case schema registry crashes, it can create a new instance and connect to the same kafka cluster and the inbuilt consumer can retrieve all the schemas stored in kafka.
 
 Confluent schema registry can be found on github: https://github.com/confluentinc/schema-registry
+
+#### Using Schema registry:
+
+- clone the github repo of the schema registry.
+- checkout the latest stable version from the github repo.
+- compile: `mavn package`
+- schema registry start script can be used to start it: `bin/schema-registry-start config/schema-registry.properties`
+- schema registry starts listening for connections on localhost, port 8081.
+- Changes to start using schema registry:
+
+After adding the avro serializer and avro dependencies, following changes would have to be done to the producer and consumer
+
+Producer:  
+```java
+Properties props = new Properties();
+props.put("bootstrap.servers", "localhost:9092, localhost:9093");
+props.put("key.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
+props.put("value.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
+props.put("schema.registry.url", "http://localhost:8081");
+
+KafkaProducer<User, Product> myProducer = new KafkaProducer(props);
+```
+
+Similar changes to be done on consumer side also, where the deserializer would need to be changed to `"io.confluent.kafka.serializers.KafkaAvroDeserializer"` and also, `"schema.registry.url"` would need to be added. Another property to be added is `"specific.avro.reader", true` (to cast the received record to appropriate type. We dont need to explicitly register the schema, because that will be done by clients.

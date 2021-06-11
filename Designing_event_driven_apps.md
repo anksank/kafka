@@ -231,10 +231,10 @@ Second Bottleneck: DB. Since there are 1000s of transactions being processed. Ru
 
 A kafka stream always connects to a kafka cluster. It will not receive messages from any other places. Very common approach is listening from topic A and writing to topic B. The goal of kafka streams is to save us from all the trouble of creating producers and consumers and abstract it all the way in a compact format, which is easy to understand. During the stream processing, the event will undergo a series of operations (topology: chain of operations). Exact definition: Acyclic graph of sources, processors and sinks. The nodes of the graph are called processor, the edge represents a line between the processors, allowing them to go from one processor to another when the previous one has finished. It is acyclic because same message need to processed again.
 
-Different types of processors:  
+Different types of processors and steps followed in this specific scenario:  
 - Consumer represents a special type of processor called **Source**, which specifies where the stream will extract the data from in order to process it.
 - Producer that is present on the end of the processors is called a **Sink**, which sends all the data to the specified location. It is mandatory to have atleast 1 source processor, but the number of sink and stream processors may vary.
-- Stream processor: The processors lying between the source and sink. Each stream processor does a specific task, and it can be chained to achieve the desired result. Each stream processor can be either a filter (where specific messages can be filtered), a map (where message is transformed from 1 form to another), a counter (to count all messages of a specific type). Since the count processor needs to store the count of each type of message, we need a "State Store", which can be either ephemeral (if app is down, data is lost), or fault tolerant by persisting the data in external storage. Default is a fault tolerant one, by using an internal topic on the cluster as a storage area. The number of messages of a type can be obtained from the state store and then this count is sent to the sink store as a message.
+- Stream processor: The processors lying between the source and sink. Each stream processor does a specific task, and it can be chained to achieve the desired result. Each stream processor can either be a filter (where specific messages can be filtered), a map (where message is transformed from 1 form to another), a counter (to count all messages of a specific type), of any of several others, which are defined below. Since the count processor needs to store the count of each type of message, we need a "State Store", which can be either ephemeral (if app is down, data is lost), or fault tolerant by persisting the data in external storage. Default is a fault tolerant one, by using an internal topic on the cluster as a storage area. The number of messages of a type can be obtained from the state store and then this count is sent to the sink store as a message.
 ![Screenshot 2021-06-11 at 8 02 15 PM](https://user-images.githubusercontent.com/10058009/121702954-f321b880-caef-11eb-8ee4-874c435f6510.png)
 
 #### Duality of Streams
@@ -242,3 +242,29 @@ Different types of processors:
 In an event-driven architecture, usange of streams might not be enough, we would need to store the data as well. When we process events, we can process them with 2 different perspectives: 1. As a Stream: processing independent event, with no relation to other events (like a user placing multiple orders). **_Delete topics_** can be used as a cleanup policy. 2. As a Database table: Where we persist only the latest state for some specific information. (for example: bank balance is the result of sum of events, always relying upon the previous event). These types of events are stored in _**Compaction topics**_ on Kafka.
 
 To transform a stream to a table, we can perform operations like aggregating, reducing or counting data. To achieve the reverse, we would need to iterate over all the events from beginning of time and store them as independent events.
+
+### Stream Processors
+
+There are 2 categories of processors used in Kafka Streams: Stateless and Stateful. Stateless processor processes each event independently, whereas stateful processor requires a State Store to process events.
+
+Kafka Streams offer a large number of operations that can be performed in a stateless manner. Operations:
+- Branch: To split stream in multiple branches based on some business logic.
+- Filter: To reject messages based on a condition. 
+- Inverse Filter: Opposite of a filter. 
+- Map: To transform messages from 1 type to another.
+- FlatMap: To transform 1 event to multiple events of same type or different types.
+- Foreach: To iterate over each event: This is a terminal process. If foreach is used, we cannot use a sink processor anymore.
+- Peek: To inspect elements passing down the stream.
+- GroupBy: To group events based on some elements, like key of the message, or an attribute from the value. 
+- Merge: To combine 2 streams into a single one.
+
+Complete list: https://kafka.apache.org/documentation/streams/developer-guide/dsl-api.html#stateless-transformations
+
+Stateful Operations:
+- Aggregations: Example - calulating the sum of all the transactions that have been posted in a topic.
+- Count: count messages with the same key.
+- Joins: joining streams/tables can be useful when we would like to enhance some messages with information from different topics.
+- Windowing: works with intervals of time, on which we can perform various operations.
+- Custom Processors: we can create our own processors by using a low-level API.
+
+Complete Details: https://kafka.apache.org/documentation/streams/developer-guide/dsl-api.html#stateful-transformations

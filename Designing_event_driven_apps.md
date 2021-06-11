@@ -1,6 +1,6 @@
 # Designing Event-driven Applications Using Apache Kafka Ecosystem
 
-## Event-driven Architecture (EDA)
+## 2. Event-driven Architecture (EDA)
 
 A software architecture pattern promoting the production, detection, consumption of, and reaction to events.  
 When number of microservices increase to solve a business use case, it increases the communication between the services which results to something called ***microservices hell***. That is when event-driven architecture comes into the picture. Everything revolves around events and not the Data.
@@ -59,7 +59,7 @@ Step 2: DDD.
 
 ![Screenshot 2021-06-07 at 9 15 32 PM](https://user-images.githubusercontent.com/10058009/121049691-92376f00-c7d5-11eb-88de-49faa3e8c27d.png)
 
-### Why Kafka?
+## 3. Why Kafka?
 
 - Open Source
 - Written in Java (originally written in Scala, but the bytecode can also be run on a JVM)
@@ -76,7 +76,7 @@ Step 2: DDD.
 
 ![Screenshot 2021-06-08 at 2 34 58 PM](https://user-images.githubusercontent.com/10058009/121156943-c4dd7800-c866-11eb-948d-e8eb66df1c23.png)
 
-## Communicating Message Structure with AVRO and Schema Registry
+## 4. Communicating Message Structure with AVRO and Schema Registry
 
 **Serialization:** The process of translating data structures or object states into a format that can be stored, transmitted and reconstructed later, possible in a different computer environment
 
@@ -193,3 +193,78 @@ KafkaProducer<User, Product> myProducer = new KafkaProducer(props);
 ```
 Consumer:  
 Similar changes to be done on consumer side also, where the deserializer would need to be changed to `"io.confluent.kafka.serializers.KafkaAvroDeserializer"` and also, `"schema.registry.url"` would need to be added. Another property to be added is `"specific.avro.reader", true` (to cast the received record to appropriate type. We dont need to explicitly register the schema, because that will be done by clients.
+
+## 5. Building Streaming Applications
+
+From a data science perspective, streaming is processing data events one by one as they arrice in our system.
+
+Use cases of Streaming:
+
+- Videos
+- Actions/Process execution: Respond to events happening in real time using streaming. For ex: If a customer has entered payment details, and the system needs to process the transaction.
+- Data Analytics: Implementing streaming to analyze the traffic in real time is an example.
+- Sensor Detection: For example, in case of a fire, we want the system to immediately start sprinklers and call authorities.
+- Internet of Things: Interconnecting multiple devices/sensors together and using stream processing and even adding machine learning to enhance capabilities.
+- Alerting: A malicious user has accessed your account, you would need to be immediately alerted in order for you to change password.
+
+### Fraud Detection System
+
+Examples: Reject all messages with invalid userId, Only allow items lower than 1,000, total amount greater than 10,000$.  
+In a traditional system, these would be steps:
+- Payment service responsible to validating and processing the payments
+- Payment request comes and the payment service sends a request to a frad detection system to check if the transaction is not fradulent.
+- To save all transactions done by the user, we would need to save all these in a DB.
+- After all business rules are applied and the validation is successful, transaction is marked as not fradulent.
+- If any one of the business rules are not satisfied, the fraud detection service will mark validation unsuccessful, and transaction is marked as a failure. Payment is rejected.
+
+First Bottleneck: There is a dependency between payment service and fraud detection service. One cannot run without the other.  
+Second Bottleneck: DB. Since there are 1000s of transactions being processed. Running so many DB calls may result into service becoming unavailable. 
+
+#### How can Kafka help?
+
+- The payment service which is capable of creating and transmitting transactions is connected to a kafka cluster.
+- On the other side of the cluster, we have a payment processor which is in charge of all the transactions that arrive in that system.
+- Payment service is the Producer producing to the topic: payments, and Payment processor is the consumer reading messages from topic: validated-payments.
+- Now we need a fraud detection service, which will identify the valid transactions and pass it onto the validated-payments topic from the payments topic. For this we need to plug in a consumer and a producer.
+- There needs to be a business rule set up in the service, so that each transaction passes through this rule.
+![Screenshot 2021-06-11 at 7 44 28 PM](https://user-images.githubusercontent.com/10058009/121700374-768dda80-caed-11eb-9d2f-b3d836df18fc.png)
+
+A kafka stream always connects to a kafka cluster. It will not receive messages from any other places. Very common approach is listening from topic A and writing to topic B. The goal of kafka streams is to save us from all the trouble of creating producers and consumers and abstract it all the way in a compact format, which is easy to understand. During the stream processing, the event will undergo a series of operations (topology: chain of operations). Exact definition: Acyclic graph of sources, processors and sinks. The nodes of the graph are called processor, the edge represents a line between the processors, allowing them to go from one processor to another when the previous one has finished. It is acyclic because same message need to processed again.
+
+Different types of processors and steps followed in this specific scenario:  
+- Consumer represents a special type of processor called **Source**, which specifies where the stream will extract the data from in order to process it.
+- Producer that is present on the end of the processors is called a **Sink**, which sends all the data to the specified location. It is mandatory to have atleast 1 source processor, but the number of sink and stream processors may vary.
+- Stream processor: The processors lying between the source and sink. Each stream processor does a specific task, and it can be chained to achieve the desired result. Each stream processor can either be a filter (where specific messages can be filtered), a map (where message is transformed from 1 form to another), a counter (to count all messages of a specific type), of any of several others, which are defined below. Since the count processor needs to store the count of each type of message, we need a "State Store", which can be either ephemeral (if app is down, data is lost), or fault tolerant by persisting the data in external storage. Default is a fault tolerant one, by using an internal topic on the cluster as a storage area. The number of messages of a type can be obtained from the state store and then this count is sent to the sink store as a message.
+![Screenshot 2021-06-11 at 8 02 15 PM](https://user-images.githubusercontent.com/10058009/121702954-f321b880-caef-11eb-8ee4-874c435f6510.png)
+
+#### Duality of Streams
+
+In an event-driven architecture, usange of streams might not be enough, we would need to store the data as well. When we process events, we can process them with 2 different perspectives: 1. As a Stream: processing independent event, with no relation to other events (like a user placing multiple orders). **_Delete topics_** can be used as a cleanup policy. 2. As a Database table: Where we persist only the latest state for some specific information. (for example: bank balance is the result of sum of events, always relying upon the previous event). These types of events are stored in _**Compaction topics**_ on Kafka.
+
+To transform a stream to a table, we can perform operations like aggregating, reducing or counting data. To achieve the reverse, we would need to iterate over all the events from beginning of time and store them as independent events.
+
+### Stream Processors
+
+There are 2 categories of processors used in Kafka Streams: Stateless and Stateful. Stateless processor processes each event independently, whereas stateful processor requires a State Store to process events.
+
+Kafka Streams offer a large number of operations that can be performed in a stateless manner. Operations:
+- Branch: To split stream in multiple branches based on some business logic.
+- Filter: To reject messages based on a condition. 
+- Inverse Filter: Opposite of a filter. 
+- Map: To transform messages from 1 type to another.
+- FlatMap: To transform 1 event to multiple events of same type or different types.
+- Foreach: To iterate over each event: This is a terminal process. If foreach is used, we cannot use a sink processor anymore.
+- Peek: To inspect elements passing down the stream.
+- GroupBy: To group events based on some elements, like key of the message, or an attribute from the value. 
+- Merge: To combine 2 streams into a single one.
+
+Complete list: https://kafka.apache.org/documentation/streams/developer-guide/dsl-api.html#stateless-transformations
+
+Stateful Operations:
+- Aggregations: Example - calulating the sum of all the transactions that have been posted in a topic.
+- Count: count messages with the same key.
+- Joins: joining streams/tables can be useful when we would like to enhance some messages with information from different topics.
+- Windowing: works with intervals of time, on which we can perform various operations.
+- Custom Processors: we can create our own processors by using a low-level API.
+
+Complete Details: https://kafka.apache.org/documentation/streams/developer-guide/dsl-api.html#stateful-transformations

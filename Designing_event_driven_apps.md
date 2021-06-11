@@ -191,5 +191,5 @@ props.put("schema.registry.url", "http://localhost:8081");
 
 KafkaProducer<User, Product> myProducer = new KafkaProducer(props);
 ```
-
+Consumer:  
 Similar changes to be done on consumer side also, where the deserializer would need to be changed to `"io.confluent.kafka.serializers.KafkaAvroDeserializer"` and also, `"schema.registry.url"` would need to be added. Another property to be added is `"specific.avro.reader", true` (to cast the received record to appropriate type. We dont need to explicitly register the schema, because that will be done by clients.

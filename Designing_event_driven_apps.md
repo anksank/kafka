@@ -268,3 +268,60 @@ Stateful Operations:
 - Custom Processors: we can create our own processors by using a low-level API.
 
 Complete Details: https://kafka.apache.org/documentation/streams/developer-guide/dsl-api.html#stateful-transformations
+
+## 6. Streaming Application with KSQL
+
+Kafka SQL is a SQL streaming engine designed for ease of use by wrapping the Kafka Streams API in a friendly syntax. It has been created by Confluent.
+
+### Why is it needed, when we already have an option?
+
+Easy to create queries without having to worry about the nitty-gritty of Kafka APIs.
+
+Sample KQL Query:  
+```sql
+CREATE STREAM pineapple_pizza AS
+  SELECT crust, size, toppings
+  FROM pizza
+  WHERE type = 'pineapple';
+```
+
+### Developer API's pyramid
+![Screenshot 2021-06-12 at 3 43 31 PM](https://user-images.githubusercontent.com/10058009/121772736-fc189580-cb94-11eb-80d1-dda6ff750419.png)
+
+### How does KQL work?
+
+Streaming applications are built inside the KSQL server, which connects to the Kafka cluster and consumes and produces messages by it based on the expressions given by the user. In a non-production environment, the user interacts with a KSQL CLI. The CLI doesn't necessarily have to be on the same machine, because the CLI and KSQL server use REST APIs to communicate. The instructions written on the CLI are sent as REST APIs to the KSQL sever, where statement will be parsed and streaming engine will run it. Each query represents a different streaming application. Every query on the KQL server will be parsed to a topology and then run.
+
+![Screenshot 2021-06-12 at 3 49 13 PM](https://user-images.githubusercontent.com/10058009/121772848-c1fbc380-cb95-11eb-8631-008c33fcd181.png)
+
+```sql
+CREATE STREAM pineapple_pizza AS      > .to("pineapple_pizza")
+  SELECT crust, size, toppings        > .mapValues( pizza -> pizza.getCrust() + "," + pizza.getSize() + "," + pizza.getToppings())
+  FROM pizza                          > .stream("pizza")
+  WHERE type = 'pineapple';           > .filter(pizza -> pizza.getType().equals("pineapple"))
+```
+
+Valid topology:
+```java
+.stream("pizza")
+.filter(pizza -> pizza.getType().equals("pineapple"))
+.mapValues( pizza -> pizza.getCrust() + "," + pizza.getSize() + "," + pizza.getToppings())
+.to("pineapple_pizza")
+```
+
+### When to use?
+
+All use cases of Kafka Streams are valid here:
+- Streaming Operations: Data analytics, Monitoring, IOT, etc.
+- Viewing Data: Show content of a topic. With Kafka streams we need to go through a lot of hassle to do the same.
+- Manipulating Data: Enhance information stored in a topic. Combining fields, changing them or eliminating them is all just a query away.
+
+### Stream Processing to work with Time Windows
+
+Example Queries: What is the average number of users visiting our website per hour? Total users who order a product per day?
+
+Types of Windowing operations:
+- Tumbling
+- Hopping
+![Screenshot 2021-06-12 at 4 03 04 PM](https://user-images.githubusercontent.com/10058009/121773179-bd380f00-cb97-11eb-9e7b-8deeaeaf51ae.png)
+

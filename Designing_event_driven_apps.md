@@ -325,3 +325,12 @@ Types of Windowing operations:
 - Hopping
 ![Screenshot 2021-06-12 at 4 03 04 PM](https://user-images.githubusercontent.com/10058009/121773179-bd380f00-cb97-11eb-9e7b-8deeaeaf51ae.png)
 
+### KSQL Statements
+
+Just like any SQL, KSQL also has DDL and DML statements. 
+- Using DDL statements: `CREATE STREAM` and `CREATE TABLE`, we can create either a stream or a table from an underlying Kafka topic. KSQL updates its internal metadata store without making any changes to any Kafka topic. `DROP STREAM` and `DROP TABLE` can be used to delete streams and tables. Other DDL queries are `CREATE STREAM AS SELECT` and `CREATE TABLE AS SELECT`.
+- `SELECT`, `INSERT` are common DML statements. `CREATE STREAM AS SELECT` and `CREATE TABLE AS SELECT` are also part of DML category, since these statements define and manipulate data in one go. Data definition part is represented by `CREATE STREAM` and data manipulation part is represente by `AS SELECT`statement.
+
+### Example
+
+Raise an alert is no. of transactions by a user in a 10 min window is more than 5.

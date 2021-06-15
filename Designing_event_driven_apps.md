@@ -174,7 +174,7 @@ Confluent schema registry can be found on github: https://github.com/confluentin
 
 - clone the github repo of the schema registry.
 - checkout the latest stable version from the github repo.
-- compile: `mavn package`
+- compile: `mvn package`
 - schema registry start script can be used to start it: `bin/schema-registry-start config/schema-registry.properties`
 - schema registry starts listening for connections on localhost, port 8081.
 - Changes to start using schema registry:
@@ -333,4 +333,19 @@ Just like any SQL, KSQL also has DDL and DML statements.
 
 ### Example
 
-Raise an alert is no. of transactions by a user in a 10 min window is more than 5.
+Raise an alert is no. of transactions by a user in a 10 min window is more than 5. Below section, explains the solution.
+
+#### Using KSQL:
+
+- Clone the ksql repo: https://github.com/confluentinc/ksql.git
+- checkout the latest stable release.
+- Compile and package the code: `mvn package`
+- update `bootstrap.servers` property inside the config/ksql-server.properties to listen to the right port
+- start the ksql server: `bin/ksql-server-start config/ksql-server.properties`
+- server should start on port 8088.
+- run KSQL CLI: `bin/ksql`. By default the CLI tries to connect to the KSQL server on port 8088 on the same machine, which means no extra arguments need to be passed.
+  - run the command `SHOW STREAMS` to see the underlying streams on the KSQL and also the associated kafka topic. Similarly, you can run `SHOW TOPICS` to list all kafka topics on the cluster. If a topic is registered, it will have an entry in the SHOW STREAMS response.
+  - To register a topic as a Data Stream, we need to use `CREATE STREAM` query.
+    - `CREATE STREAM ksql_payments WITH (KAFKA_TOPIC='payments', VALUE_FORMAT='AVRO');` Before registering the topic we need to make sure that the schema has been registered for this topic.
+    - `CREATE TABLE warnings AS SELECT userId, COUNT(*) FROM ksql_payments WINDOW HOPPING (SIZE 10 MINUNTES, ADVANCE BY 1 MINUTE) GROUP BY userId HAVING COUNT(*) > 5;
+

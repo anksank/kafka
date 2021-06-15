@@ -347,5 +347,5 @@ Raise an alert is no. of transactions by a user in a 10 min window is more than 
   - run the command `SHOW STREAMS` to see the underlying streams on the KSQL and also the associated kafka topic. Similarly, you can run `SHOW TOPICS` to list all kafka topics on the cluster. If a topic is registered, it will have an entry in the SHOW STREAMS response.
   - To register a topic as a Data Stream, we need to use `CREATE STREAM` query.
     - `CREATE STREAM ksql_payments WITH (KAFKA_TOPIC='payments', VALUE_FORMAT='AVRO');` Before registering the topic we need to make sure that the schema has been registered for this topic.
-    - `CREATE TABLE warnings AS SELECT userId, COUNT(*) FROM ksql_payments WINDOW HOPPING (SIZE 10 MINUNTES, ADVANCE BY 1 MINUTE) GROUP BY userId HAVING COUNT(*) > 5;
+    - `CREATE TABLE warnings AS SELECT userId, COUNT(*) FROM ksql_payments WINDOW HOPPING ( SIZE 10 MINUNTES, ADVANCE BY 1 MINUTE ) GROUP BY userId HAVING COUNT(*) > 5;`
 

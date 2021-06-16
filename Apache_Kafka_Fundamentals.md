@@ -1,5 +1,9 @@
 # Apache Kafka Fundamentals
 
+## What is Apache Kafka?
+
+A high throughput distributed messaging system.
+
 *Notes in hardcopy*
 
 ## Types of Topics
